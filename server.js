@@ -52,24 +52,24 @@ app.listen(port, () => {
 
 
 // apis 
-// get all tasks based on email of logged user
-router.get('/my-tasks', async (ctx, next) => {
-    // console.log(ctx)
 
-    const { email } = ctx.query;
-    try {
-        const result = await tasksCollection.find({ taskAuthor: email }).toArray();
-        ctx.body = result;
-        // console.log(result)
-    } catch (error) {
-        console.log(error.message);
-        ctx.throw(500, 'Internal Server Error');
-    }
+// router.get('/my-tasks', async (ctx, next) => {
+//     // console.log(ctx)
 
-
-});
+//     const { email } = ctx.query;
+//     try {
+//         const result = await tasksCollection.find({ taskAuthor: email }).toArray();
+//         ctx.body = result;
+//         // console.log(result)
+//     } catch (error) {
+//         console.log(error.message);
+//         ctx.throw(500, 'Internal Server Error');
+//     }
 
 
+// });
+
+// create task
 router.post('/api/v1/tasks', async (ctx) => {
     const { request, response } = ctx;
     try {
@@ -77,7 +77,7 @@ router.post('/api/v1/tasks', async (ctx) => {
         console.log(taskInfo);
 
         const result = await tasksCollection.insertOne(taskInfo);
-        console.log(result);
+        // console.log(result);
         ctx.body = result;
     } catch (error) {
         console.log(error.message);
@@ -86,17 +86,18 @@ router.post('/api/v1/tasks', async (ctx) => {
     }
 })
 
-router.patch('/my-tasks/:id', async (ctx) => {
+// edit task
+router.put('/api/v1/tasks/:id', async (ctx) => {
     try {
         const { id } = ctx.params;
 
         console.log('task___________', ctx.request.body);
-        const query = { _id: ObjectId(id) };
+        const query = { _id: new ObjectId(id) };
         const updateInfo = {
             $set: ctx.request.body,
         };
 
-        const result = await tasksCollection.updateOne(query, updateInfo);
+        const result = await tasksCollection.updateOne(query, updateInfo, { upsert: true });
         if (result.matchedCount) {
             ctx.body = {
                 success: true,
@@ -116,7 +117,7 @@ router.patch('/my-tasks/:id', async (ctx) => {
     }
 });
 
-
+// delete task
 router.del("/api/v1/tasks/:id", async (ctx) => {
     try {
 
@@ -127,47 +128,49 @@ router.del("/api/v1/tasks/:id", async (ctx) => {
         result.acknowledged ? ctx.body = result : ctx.body = "Operation failed"
     }
     catch (error) {
-        console.log(error.message); 
-    }
-})
-
-// search
-router.get("/tasks", async (ctx) => {
-    try {
-
-        const { name } = ctx.query;
-      
-        try {
-            const result = await tasksCollection.find({ taskTitle: { $regex: name } }).toArray();
-            ctx.body = result;
-            console.log(result)
-        } catch (error) {
-            console.log(error.message);
-            ctx.throw(500, 'Internal Server Error');
-        }
-        ctx.body = result
-    }
-    catch (error) {
         console.log(error.message);
     }
 })
+
 
 
 // get all tasks
 router.get("/api/v1/tasks", async (ctx) => {
     try {
-      
-        try {
+        if (ctx.query && ctx.query.name) {
+            const name = ctx.query.name;
+            console.log(name);
+            const result = await tasksCollection.find({ taskTitle: { $regex: String(name) } }).toArray();
+            console.log(result);
+            ctx.body = result;
+        } else {
             const result = await tasksCollection.find({}).toArray();
             ctx.body = result;
-            // console.log(result)
-        } catch (error) {
-            console.log(error.message);
-            ctx.throw(500, 'Internal Server Error');
         }
-        ctx.body = result
-    }
-    catch (error) {
+    } catch (error) {
         console.log(error.message);
+        ctx.throw(500, 'Internal Server Error');
     }
-})
+});
+
+
+// complete task
+router.patch('/api/v1/tasks/:id', async (ctx) => {
+    try {
+        const { id } = ctx.params;
+
+        const query = { _id: new ObjectId(id) };
+        console.log(query)
+        const updateInfo = {
+            $set: { completed: true },
+        };
+
+        let res = await tasksCollection.updateOne(query, updateInfo);
+        ctx.body = res;
+    } catch (error) {
+        ctx.body = {
+            success: false,
+            error: error.message,
+        };
+    }
+});
