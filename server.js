@@ -16,7 +16,7 @@ app.use(router.routes()).use(router.allowedMethods());
 
 // db setup
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_USER_PASS}@cluster0.6vknfdj.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb://localhost:27017`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 // console.log(uri);
 const DBConnect = async () => {
