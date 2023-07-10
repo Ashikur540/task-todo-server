@@ -1,7 +1,7 @@
 
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
-const connectDB = async () => {
+ const connectDB = async () => {
     
     try {
       const conn = await mongoose.connect(`mongodb://0.0.0.0:27017/taskManagerDb`, {
@@ -13,5 +13,5 @@ const connectDB = async () => {
       process.exit(1);
     }
   }
+  export default connectDB
 
-  module.exports=connectDB;

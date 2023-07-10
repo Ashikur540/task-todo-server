@@ -1,17 +1,21 @@
+import { ObjectId } from "mongodb";
+import TaskModel from "../models/task.model.js";
 
-const { ObjectId } = require("mongodb");
-const Task = require("../models/task.model")
 
-module.exports.getAllTasks = async ctx => {
+
+
+
+
+ const getAllTasks = async ctx => {
     try {
         if (ctx.query && ctx.query.name) {
             const name = ctx.query.name;
             // console.log(name);
-            const result = await Task.find({ taskTitle: { $regex: String(name) } }).sort({ createdAt: -1 });
+            const result = await  TaskModel.find({ taskTitle: { $regex: String(name) } }).sort({ createdAt: -1 });
             // console.log(result);
             ctx.body = result;
         } else {
-            const result = await Task.find({}).sort({ createdAt: -1 });
+            const result = await TaskModel.find({}).sort({ createdAt: -1 });
             ctx.body = result;
         }
     } catch (error) {
@@ -23,14 +27,14 @@ module.exports.getAllTasks = async ctx => {
 
 
 
-module.exports.createTask = async ctx => {
+const createTask = async ctx => {
 
     const { request, response } = ctx;
     try {
         const taskInfo = request.body;
         // console.log(taskInfo);
 
-        const result = await Task.create(taskInfo);
+        const result = await TaskModel.create(taskInfo);
         // console.log(result);
         ctx.body = result;
     } catch (error) {
@@ -42,7 +46,7 @@ module.exports.createTask = async ctx => {
 
 
 
-module.exports.EditTask = async ctx => {
+const EditTask = async ctx => {
 
     try {
         const { id } = ctx.params;
@@ -53,7 +57,7 @@ module.exports.EditTask = async ctx => {
             $set: ctx.request.body,
         };
 
-        const result = await Task.updateOne(query, updateInfo, { upsert: true });
+        const result = await TaskModel.updateOne(query, updateInfo, { upsert: true });
         if (result.matchedCount) {
             ctx.body = {
                 success: true,
@@ -74,7 +78,7 @@ module.exports.EditTask = async ctx => {
 }
 
 
-module.exports.completeTask = async ctx => {
+const completeTask = async ctx => {
     try {
         const { id } = ctx.params;
 
@@ -84,7 +88,7 @@ module.exports.completeTask = async ctx => {
             $set: { completed: true },
         };
 
-        let res = await Task.updateOne(query, updateInfo);
+        let res = await TaskModel.updateOne(query, updateInfo);
         ctx.body = res;
     } catch (error) {
         ctx.body = {
@@ -95,12 +99,12 @@ module.exports.completeTask = async ctx => {
 }
 
 
-module.exports.deleteTask = async ctx => {
+const deleteTask = async ctx => {
     try {
 
         const { id } = ctx.request.params;
         const query = { _id: new ObjectId(id) }
-        const result = await Task.deleteOne(query);
+        const result = await TaskModel.deleteOne(query);
         // console.log(result,id)
         result.acknowledged ? ctx.body = result : ctx.body = "Operation failed"
     }
@@ -108,3 +112,7 @@ module.exports.deleteTask = async ctx => {
         console.log(error.message);
     }
 }
+
+
+export { EditTask, completeTask, createTask, deleteTask, getAllTasks };
+
