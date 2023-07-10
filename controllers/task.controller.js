@@ -6,12 +6,12 @@ module.exports.getAllTasks = async ctx => {
     try {
         if (ctx.query && ctx.query.name) {
             const name = ctx.query.name;
-            console.log(name);
-            const result = await Task.find({ taskTitle: { $regex: String(name) } }).sort({ createdAt : -1 });
+            // console.log(name);
+            const result = await Task.find({ taskTitle: { $regex: String(name) } }).sort({ createdAt: -1 });
             // console.log(result);
             ctx.body = result;
         } else {
-            const result = await Task.find({});
+            const result = await Task.find({}).sort({ createdAt: -1 });
             ctx.body = result;
         }
     } catch (error) {
@@ -47,7 +47,7 @@ module.exports.EditTask = async ctx => {
     try {
         const { id } = ctx.params;
 
-        console.log('task___________', ctx.request.body);
+        // console.log('task___________', ctx.request.body);
         const query = { _id: new ObjectId(id) };
         const updateInfo = {
             $set: ctx.request.body,
